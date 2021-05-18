@@ -9,11 +9,15 @@ def getInsert(table, Id, number, subject, category, owner, status, registered, c
            ', ' + solutionprovided + ', ' + priority + ', ' + supportlevel + ', ' + serviceitem + ', ' + servicepact + ', ' + str(solutionoverdue) +\
            ', ' + str(responseoverdue) + ', ' + contact + ', ' + account + ', ' + origin + ', ' + respondedon + ', ' + satisfactionlevel + ')'
 
+def getDelete(table, id):
+    return 'Delete from "' + table + '" where "Id"=' + id;
+
 def writeToFile(data):
     headers = []
     for rcrds in data[0]:
         headers.append(rcrds)
-    datafile = open('result.sql', 'a')
+    insertResultDataFile = open('result.sql', 'a')
+    deleteResultDataFile = open('delete_result.sql', 'a')
     for line in data:
         line['Category'] = getId('CaseCategory', "'" + line['Category'].replace("'", "''") + "'", 'Name')
         line['Assignee'] = getId('Contact', "'" + line['Assignee'].replace("'", "''") + "'", 'Name')
@@ -31,8 +35,11 @@ def writeToFile(data):
                                 "'" + line['Response time'].replace("'", "''") + "'", "'" + line['Actual resolution time'].replace("'", "''") + "'",
                                 line['Priority'], line['Support line'], line['Service'], line['SLA'], 'True' if line['Overdue resolution'] == 'Yes' else 'False', 'True' if line['Overdue response'] == 'Yes' else 'False',
                                 line['Contact'], line['Account'], line['Source'], "'" + line['Actual response time'].replace("'", "''") + "'", line['Satisfaction level'])
-        datafile.write(insertQuery + ";\r\n")
-    datafile.close()
+        insertResultDataFile.write(insertQuery + ";\r\n")
+        deleteQuery = getDelete('Case', "'" + line['Id'] + "'")
+        deleteResultDataFile.write(deleteQuery + ";\r\n")
+    insertResultDataFile.close()
+    deleteResultDataFile.close()
 
 if __name__ == '__main__':
     data = []
