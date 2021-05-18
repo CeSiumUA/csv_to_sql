@@ -13,31 +13,30 @@ def writeToFile(data):
     headers = []
     for rcrds in data[0]:
         headers.append(rcrds)
-    datafile = open('case/result.sql', 'a')
+    datafile = open('result.sql', 'a')
     for line in data:
-        line['Category'] = getId('CaseCategory', "'" + line['Category'] + "'", 'Name')
-        line['Assignee'] = getId('Contact', "'" + line['Assignee'] + "'", 'Name')
-        line['Status'] = getId('CaseStatus', "'" + line['Status'] + "'", 'Name')
-        line['Priority'] = getId('CasePriority', "'" + line['Priority'] + "'", 'Name')
-        line['Support line'] = getId('SupportLevel', "'" + line['Support line'] + "'", 'Name')
-        line['Service'] = getId('ServiceItem', "'" + line['Service'] + "'", 'Name')
-        line['SLA'] = getId('ServicePact', "'" + line['SLA'] + "'", 'Name')
-        # line['"Overdue resolution"'] = getId('SolutionOverdue', line['"Overdue resolution"'], 'Name')
-        # line['"Overdue response"'] = getId('ResponseOverdue', line['"Overdue response"'], 'Name')
-        line['Contact'] = getId('Contact', "'" + line['Contact'] + "'", 'Name')
-        line['Account'] = getId('Account', "'" + line['Account'] + "'", 'Name')
-        line['Source'] = getId('CaseOrigin', "'" + line['Source'] + "'", 'Name')
+        line['Category'] = getId('CaseCategory', "'" + line['Category'].replace("'", "''") + "'", 'Name')
+        line['Assignee'] = getId('Contact', "'" + line['Assignee'].replace("'", "''") + "'", 'Name')
+        line['Status'] = getId('CaseStatus', "'" + line['Status'].replace("'", "''") + "'", 'Name')
+        line['Priority'] = getId('CasePriority', "'" + line['Priority'].replace("'", "''") + "'", 'Name')
+        line['Support line'] = getId('SupportLevel', "'" + line['Support line'].replace("'", "''") + "'", 'Name')
+        line['Service'] = getId('ServiceItem', "'" + line['Service'].replace("'", "''") + "'", 'Name')
+        line['SLA'] = getId('ServicePact', "'" + line['SLA'].replace("'", "''") + "'", 'Name')
+        line['Contact'] = getId('Contact', "'" + line['Contact'].replace("'", "''") + "'", 'Name')
+        line['Account'] = getId('Account', "'" + line['Account'].replace("'", "''") + "'", 'Name')
+        line['Source'] = getId('CaseOrigin', "'" + line['Source'].replace("'", "''") + "'", 'Name')
         line['Satisfaction level'] = getId('SatisfactionLevel', "'" + line['Satisfaction level'] + "'", 'Name')
-        insertQuery = getInsert('Case', "'" + line['Id'] + "'", "'" + line['Number'] + "'", "'" + line['Subject'] + "'", line['Category'], line['Assignee'],
-                                line['Status'], "'" + line['Registration date'] + "'", "'" + line['Created on'] + "'", "'" + line['Response time'] + "'", "'" + line['Actual resolution time'] + "'",
-                                line['Priority'], line['Support line'], line['Service'], line['SLA'], 1 if line['Overdue resolution'] == 'Yes' else 0, 1 if line['Overdue response'] == 'Yes' else 0,
-                                line['Contact'], line['Account'], line['Source'], "'" + line['Actual response time'] + "'", line['Satisfaction level'])
+        insertQuery = getInsert('Case', "'" + line['Id'] + "'", "'" + line['Number'].replace("'", "''") + "'", "'" + line['Subject'].replace("'", "''") + "'", line['Category'], line['Assignee'],
+                                line['Status'], "'" + line['Registration date'].replace("'", "''") + "'", "'" + line['Created on'].replace("'", "''") + "'",
+                                "'" + line['Response time'].replace("'", "''") + "'", "'" + line['Actual resolution time'].replace("'", "''") + "'",
+                                line['Priority'], line['Support line'], line['Service'], line['SLA'], 'True' if line['Overdue resolution'] == 'Yes' else 'False', 'True' if line['Overdue response'] == 'Yes' else 'False',
+                                line['Contact'], line['Account'], line['Source'], "'" + line['Actual response time'].replace("'", "''") + "'", line['Satisfaction level'])
         datafile.write(insertQuery + ";\r\n")
     datafile.close()
 
 if __name__ == '__main__':
     data = []
-    with open('case/case.csv', newline='') as File:
+    with open('case.csv', newline='') as File:
         reader = csv.DictReader(File)
         for row in reader:
             data.append(row)
