@@ -130,3 +130,6 @@ dmypy.json
 result.sql
 case_result.csv
 case.csv
+
+.idea
+opportunity/opportunity.csv
