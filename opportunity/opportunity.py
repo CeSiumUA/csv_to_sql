@@ -1,18 +1,24 @@
 import csv
+import uuid
 
 def getId(table, value, column):
-    return '(select "Id" from ' + '"' + table + '"' + ' where "' + column + '"=' + value + ')'
+    return '(select "Id" from ' + '"' + table + '"' + ' where "' + column + '"=' + value + ' limit 1)'
 
-def getInsert(table, Id, name, customerneed, stage, account, budget, opportunityamount, category, type, contact, owner, source, predictiveprobability, predictedopportunity):
-    return 'Insert into "' + table + '"' + '("Id", "Title", "LeadTypeId", "StageId", "AccountId", "Bubget", "Amount", "CategoryId", "TypeId", "ContactId", "OwnerId", "SourceId", "PredictiveProbability", "labPreOpAm")' + \
+def getInsert(table, Id, name, customerneed, stage, account, budget, opportunityamount, category, type, contact, owner, source, predictiveprobability):
+    checker = ''#'BEGIN \r\n IF NOT EXISTS (select * from "' + table + '" where "Id"=' + Id + ') BEGIN'
+    return checker + 'Insert into "' + table + '"' + '("Id", "Title", "LeadTypeId", "StageId", "AccountId", "Budget", "Amount", "CategoryId", "TypeId", "ContactId", "OwnerId", "SourceId", "PredictiveProbability")' + \
            ' VALUES (' + Id + ',' + name + ',' + customerneed + ',' + stage + ',' + account + ',' + budget + ',' + opportunityamount + ',' + category + ',' + type + \
-           ', ' + contact + ', ' + owner + ', ' + source + ', ' + predictiveprobability + ', ' + predictedopportunity + ')'
+           ', ' + contact + ', ' + owner + ', ' + source + ', ' + predictiveprobability + ') ON CONFLICT DO NOTHING' #END END'
+
+def getDelete(table, id):
+    return 'delete from "' + table + '" where "Id"=' + id
 
 def writeToFile(data):
     headers = []
     for rcrds in data[0]:
         headers.append(rcrds)
-    datafile = open('result.sql', 'a')
+    datafile = open('result.sql', 'w')
+    deleteResultDataFile = open('delete_result.sql', 'w')
     for line in data:
         line['Customer need'] = getId('LeadType', "'" + line['Customer need'].replace("'", "''") + "'", 'Name')
         line['Stage'] = getId('OpportunityStage', "'" + line['Stage'].replace("'", "''") + "'", 'Name')
@@ -22,11 +28,15 @@ def writeToFile(data):
         line['Contact'] = getId('Contact', "'" + line['Contact'].replace("'", "''") + "'", 'Name')
         line['Owner'] = getId('Contact', "'" + line['Owner'].replace("'", "''") + "'", 'Name')
         line['Source'] = getId('OpportunitySource', "'" + line['Source'].replace("'", "''") + "'", 'Name')
+        line['Id'] = str(uuid.uuid4()) if not line['Id'] else line['Id']
         insertQuery = getInsert('Opportunity', "'" + line['Id'] + "'", "'" + line['Name'].replace("'", "''") + "'", line['Customer need'], line['Stage'], line['Account'],
                                 line['Budget'], line['Opportunity amount'], line['Category'], line['Type'], line['Contact'],
-                                line['Owner'], line['Source'], line['Predictive probability'], line['Predicted opportunity amount'])
+                                line['Owner'], line['Source'], line['Predictive probability'])
         datafile.write(insertQuery + ";\r\n")
+        deleteQuery = getDelete('Opportunity', "'" + line['Id'] + "'")
+        deleteResultDataFile.write(deleteQuery + ";\r\n")
     datafile.close()
+    deleteResultDataFile.close()
 
 if __name__ == '__main__':
     data = []
